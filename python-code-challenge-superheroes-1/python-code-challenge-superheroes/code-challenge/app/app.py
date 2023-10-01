@@ -63,7 +63,21 @@ def get_hero_by_id(id):
         response.status_code = 404
         return response
     
+@app.route('/powers' , method=['GET'])
+def get_powers():
 
+    powers = Powers.query.all()
+
+    serialized_powers=[
+        {
+             "id": power.id,
+            "name": power.name,
+            "description": power.description
+        }
+        for power in powers
+    ]
+
+    return jsonify(serialized_powers)
 
 if __name__ == '__main__':
     app.run(port=5555)
