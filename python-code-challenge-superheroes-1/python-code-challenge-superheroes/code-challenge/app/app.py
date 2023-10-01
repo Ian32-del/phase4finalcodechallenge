@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import Flask, make_response, jsonify
+from flask import Flask, jsonify , request , abort
 from flask_migrate import Migrate
 
 
@@ -78,6 +78,110 @@ def get_powers():
     ]
 
     return jsonify(serialized_powers)
+
+@app.route('/powers/<int:id>', methods=['GET'])
+def get_power_by_id(id):
+
+    power = Powers.query.get(id)
+
+    if power is None:
+
+        return jsonify({"error": "Power not found"}),404
+    
+    serialised_power = {
+        "id": power.id,
+        "name": power.name,
+        "description": power.description
+    }
+
+    return jsonify(serialised_power)
+
+@app.route('/power/<int:id>', methods=['PATCH'])
+def update_power_by_id(id):
+
+    power = Powers.query.get(id)
+
+    if power is None :
+
+        return jsonify({"error": "Power not found"}), 404
+    
+    updated_description = request.json.get('description')
+
+    if updated_description :
+
+        power.description = updated_description
+
+        try:
+
+            db.session.commit()
+
+            serialised_power = {
+                "id": power.id,
+                "name": power.name,
+                "description": power.description
+            }
+
+            return jsonify(serialised_power)
+        except Exception as e :
+
+            db.session.rollback()
+            return jsonify({"errors": ["validation errors"]}), 400
+        else:
+             return jsonify({"errors": ["description is required"]}), 400
+
+@app.route('/hero_powers' , methods=['POST'])
+
+def create_hero_power():
+
+    data = request.json
+
+    strength = data.get('strength')
+    power_id = data.get('power_id')
+    hero_id = data.get('hero_id')
+
+    if not (strength and power_id and hero_id):
+        return jsonify({"errors": ["strength, power_id, and hero_id are required"]}), 400
+    
+    hero = Hero.query.get(hero_id)
+
+    if hero is None:
+
+        return jsonify({"error": "Hero not found"}), 404
+    
+    power = Powers.query.get(power_id)
+
+    if power is None:
+        return jsonify({"error": "Power not found"}), 404
+    
+    hero_power = Hero_Powers(strength=strength, hero=hero, power=power)
+
+    try:
+        db.session.add(hero_power)
+        db.session.commit()
+
+        serialized_hero = {
+            "id": hero.id,
+            "name": hero.name,
+            "super_name": hero.super_name,
+            "powers": [
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "description": p.description
+                }
+                for p in hero.powers
+            ]
+        }
+        return jsonify(serialized_hero)
+    except Exception as e:
+
+        db.session.rollback()
+        return jsonify({"errors": ["validation errors"]}), 400
+
+
+
+
+
 
 if __name__ == '__main__':
     app.run(port=5555)
