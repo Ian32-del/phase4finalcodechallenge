@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from sqlalchemy import CheckConstraint
 
 db = SQLAlchemy()
 
@@ -23,6 +24,11 @@ class Powers(db.Model):
     updated_at = db.Column(db.DateTime , onupdate=datetime.utcnow)
     heroes = db.relationship('Hero', secondary='hero_powers', back_populates='powers')
 
+    __table_args__ = (
+        CheckConstraint("length(description) <= 100", name="check_description_length"),
+    )    
+
+       
 class Hero_Powers(db.Model):
     __tablename__= 'hero_powers'
 
@@ -32,7 +38,10 @@ class Hero_Powers(db.Model):
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
     hero_id = db.Column(db.Integer,db.ForeignKey('hero.id'))
     power_id = db.Column(db.Integer , db.ForeignKey('power.id'))
-
+    
+    __table_args__ = (
+        CheckConstraint("length(strength) <= 80" , name="check_strength_length"),
+    )
 
 
 # add any models you may need. 
