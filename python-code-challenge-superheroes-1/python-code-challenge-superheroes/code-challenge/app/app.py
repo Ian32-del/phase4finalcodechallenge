@@ -8,8 +8,7 @@ from models import db, Hero , Powers , Hero_Powers
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db_app.db'
-app.config['SQLALCHEMY_TRACK-MODIFICATIONS'] = False
-
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 migrate = Migrate(app, db)
 
 db.init_app(app)
@@ -18,7 +17,7 @@ db.init_app(app)
 def home():
     return '<h1> Welcome </h1>'
 
-@app.route('/heroes' , method=['GET'])
+@app.route('/heroes' , methods=['GET'])
 def get_heroes():
 
     heroes = Hero.query.all()
@@ -63,7 +62,7 @@ def get_hero_by_id(id):
         response.status_code = 404
         return response
     
-@app.route('/powers' , method=['GET'])
+@app.route('/powers' , methods=['GET'])
 def get_powers():
 
     powers = Powers.query.all()
@@ -97,37 +96,32 @@ def get_power_by_id(id):
     return jsonify(serialised_power)
 
 @app.route('/power/<int:id>', methods=['PATCH'])
-def update_power_by_id(id):
-
+def update_power(id):
     power = Powers.query.get(id)
 
-    if power is None :
-
+    if power is None:
         return jsonify({"error": "Power not found"}), 404
-    
+
     updated_description = request.json.get('description')
 
-    if updated_description :
-
+    if updated_description:
         power.description = updated_description
 
         try:
-
             db.session.commit()
 
-            serialised_power = {
+            serialized_power = {
                 "id": power.id,
                 "name": power.name,
                 "description": power.description
             }
 
-            return jsonify(serialised_power)
-        except Exception as e :
-
+            return jsonify(serialized_power)
+        except Exception as e:
             db.session.rollback()
             return jsonify({"errors": ["validation errors"]}), 400
-        else:
-             return jsonify({"errors": ["description is required"]}), 400
+    else:
+        return jsonify({"errors": ["description is required"]}), 400
 
 @app.route('/hero_powers' , methods=['POST'])
 
@@ -184,4 +178,36 @@ def create_hero_power():
 
 
 if __name__ == '__main__':
-    app.run(port=5555)
+    app.run(port=5555,debug=True)
+@app.route('/power/<int:id>', methods=['PATCH'])
+def update_power_by_id(id):
+
+    power = Powers.query.get(id)
+
+    if power is None :
+
+        return jsonify({"error": "Power not found"}), 404
+    
+    updated_description = request.json.get('description')
+
+    if updated_description :
+
+        power.description = updated_description
+
+        try:
+
+            db.session.commit()
+
+            serialised_power = {
+                "id": power.id,
+                "name": power.name,
+                "description": power.description
+            }
+
+            return jsonify(serialised_power)
+        except Exception as e :
+
+            db.session.rollback()
+            return jsonify({"errors": ["validation errors"]}), 400
+        else:
+             return jsonify({"errors": ["description is required"]}), 400

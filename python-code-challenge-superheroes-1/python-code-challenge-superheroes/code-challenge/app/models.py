@@ -1,6 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from sqlalchemy import CheckConstraint
 
 db = SQLAlchemy()
 
@@ -12,7 +11,6 @@ class Hero(db.Model):
     super_name = db.Column(db.String(80))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
-    powers = db.relationship('Powers', secondary='hero_powers', back_populates='heroes')
 
 class Powers(db.Model):
     __tablename__ = 'power'
@@ -22,15 +20,9 @@ class Powers(db.Model):
     description = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
-    heroes = db.relationship('Hero', secondary='hero_powers', back_populates='powers')
 
-    __table_args__ = (
-        CheckConstraint("length(description) <= 100", name="check_description_length"),
-    )    
-
-       
 class Hero_Powers(db.Model):
-    __tablename__= 'hero_powers'
+    __tablename__ = 'hero_powers'
 
     id = db.Column(db.Integer, primary_key=True)
     strength = db.Column(db.String(80))
@@ -39,9 +31,5 @@ class Hero_Powers(db.Model):
     hero_id = db.Column(db.Integer, db.ForeignKey('hero.id'))
     power_id = db.Column(db.Integer, db.ForeignKey('power.id'))
     
-    hero = db.relationship('Hero', back_populates='powers', foreign_keys=[hero_id])
-    power = db.relationship('Powers', back_populates='heroes', foreign_keys=[power_id])
-
-    __table_args__ = (
-        CheckConstraint("length(strength) <= 80", name="check_strength_length"),
-    )
+    hero = db.relationship('Hero', foreign_keys=[hero_id])
+    power = db.relationship('Powers', foreign_keys=[power_id])
