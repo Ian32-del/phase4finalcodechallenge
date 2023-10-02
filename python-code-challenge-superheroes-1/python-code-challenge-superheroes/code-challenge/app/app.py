@@ -38,29 +38,41 @@ def get_hero_by_id(id):
 
     hero = Hero.query.get(id)
 
-    if hero is not None:
-        powers = hero.powers
-        serialized_powers = [
-            {
-                 "id": power.id,
-                "name": power.name,
-                "description": power.description
-            }
-            for power in powers
-        ]
+    if hero is None:
 
-        serialized_hero = {
-             "id": hero.id,
-            "name": hero.name,
-            "super_name": hero.super_name,
-            "powers": serialized_powers
-        }
+        return jsonify({"error": "Hero not found"}),404
+    
+    serialized_hero = {
+            "id":hero.id,
+            "name":hero.name,
+            "super_name": hero.super_name
+    }
+    return jsonify(serialized_hero)
+    
 
-        return jsonify(serialized_hero)
-    else :
-        response = jsonify({"error":"Hero not found"})
-        response.status_code = 404
-        return response
+    # if hero is not None:
+    #     powers = hero.powers
+    #     serialized_powers = [
+    #         {
+    #              "id": power.id,
+    #             "name": power.name,
+    #             "description": power.description
+    #         }
+    #         for power in powers
+    #     ]
+
+    #     serialized_hero = {
+    #          "id": hero.id,
+    #         "name": hero.name,
+    #         "super_name": hero.super_name,
+    #         "powers": serialized_powers
+    #     }
+
+    #     return jsonify(serialized_hero)
+    # else :
+    #     response = jsonify({"error":"Hero not found"})
+    #     response.status_code = 404
+    #     return response
     
 @app.route('/powers' , methods=['GET'])
 def get_powers():
